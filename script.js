@@ -90,6 +90,102 @@ function downloadICS(games, filename) {
   URL.revokeObjectURL(url);
 }
 
+// ---------------------------------------------------
+// Weather (Open-Meteo — no API key required)
+// ---------------------------------------------------
+const WEATHER_LAT = 39.697419;
+const WEATHER_LON = -104.969710;
+
+// Minimal icon set + label per WMO weather code group.
+// https://open-meteo.com/en/docs#weathervariables
+function weatherIcon(code) {
+  const sun = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.7"/><path d="M12 2.5V5M12 19V21.5M21.5 12H19M5 12H2.5M18.4 5.6L16.6 7.4M7.4 16.6L5.6 18.4M18.4 18.4L16.6 16.6M7.4 7.4L5.6 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+  const cloudSun = `<svg viewBox="0 0 24 24" fill="none"><path d="M8.5 4.5V6.3M4.6 8.4L5.9 9.7M13.4 8.4L12.1 9.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8.6" cy="10.5" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M7 20h10.5a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 8.3 14.2" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>`;
+  const cloud = `<svg viewBox="0 0 24 24" fill="none"><path d="M6.5 19h11a3.5 3.5 0 0 0 .4-6.98 5 5 0 0 0-9.62-1.9A4 4 0 0 0 6.5 19Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>`;
+  const fog = `<svg viewBox="0 0 24 24" fill="none"><path d="M4 9h13M4 12.5h16M4 16h13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+  const rain = `<svg viewBox="0 0 24 24" fill="none"><path d="M6.5 13.5h11a3.5 3.5 0 0 0 .4-6.98 5 5 0 0 0-9.62-1.9A4 4 0 0 0 6.5 13.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 17v2.3M12 17v2.3M15.5 17v2.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+  const snow = `<svg viewBox="0 0 24 24" fill="none"><path d="M6.5 13.5h11a3.5 3.5 0 0 0 .4-6.98 5 5 0 0 0-9.62-1.9A4 4 0 0 0 6.5 13.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 17.3v2.4M12 17v2.7M15 17.3v2.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="0.2 2.6"/></svg>`;
+  const storm = `<svg viewBox="0 0 24 24" fill="none"><path d="M6.5 13h11a3.5 3.5 0 0 0 .4-6.98 5 5 0 0 0-9.62-1.9A4 4 0 0 0 6.5 13Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12.5 15.5 10 19.5h3l-1.7 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  const map = {
+    0: { icon: sun, label: "Clear" },
+    1: { icon: cloudSun, label: "Mostly clear" },
+    2: { icon: cloudSun, label: "Partly cloudy" },
+    3: { icon: cloud, label: "Overcast" },
+    45: { icon: fog, label: "Foggy" },
+    48: { icon: fog, label: "Foggy" },
+    51: { icon: rain, label: "Light drizzle" },
+    53: { icon: rain, label: "Drizzle" },
+    55: { icon: rain, label: "Heavy drizzle" },
+    56: { icon: rain, label: "Freezing drizzle" },
+    57: { icon: rain, label: "Freezing drizzle" },
+    61: { icon: rain, label: "Light rain" },
+    63: { icon: rain, label: "Rain" },
+    65: { icon: rain, label: "Heavy rain" },
+    66: { icon: rain, label: "Freezing rain" },
+    67: { icon: rain, label: "Freezing rain" },
+    71: { icon: snow, label: "Light snow" },
+    73: { icon: snow, label: "Snow" },
+    75: { icon: snow, label: "Heavy snow" },
+    77: { icon: snow, label: "Snow grains" },
+    80: { icon: rain, label: "Rain showers" },
+    81: { icon: rain, label: "Rain showers" },
+    82: { icon: rain, label: "Heavy showers" },
+    85: { icon: snow, label: "Snow showers" },
+    86: { icon: snow, label: "Snow showers" },
+    95: { icon: storm, label: "Thunderstorms" },
+    96: { icon: storm, label: "Thunderstorms" },
+    99: { icon: storm, label: "Thunderstorms" },
+  };
+
+  return map[code] || { icon: cloud, label: "—" };
+}
+
+async function loadWeatherFor(game) {
+  const iconEl = document.getElementById("weather-icon");
+  const textEl = document.getElementById("weather-text");
+  if (!iconEl || !textEl) return;
+
+  if (!game) {
+    textEl.textContent = "See you next season";
+    textEl.classList.add("weather-chip__text--muted");
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams({
+      latitude: WEATHER_LAT,
+      longitude: WEATHER_LON,
+      daily: "weathercode,temperature_2m_max,temperature_2m_min",
+      temperature_unit: "fahrenheit",
+      timezone: "America/Denver",
+      forecast_days: "16",
+    });
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`);
+    if (!res.ok) throw new Error("weather request failed");
+    const data = await res.json();
+
+    const idx = data?.daily?.time?.indexOf(game.date);
+    if (idx == null || idx < 0) {
+      textEl.textContent = "Forecast opens up 16 days out";
+      textEl.classList.add("weather-chip__text--muted");
+      return;
+    }
+
+    const code = data.daily.weathercode[idx];
+    const hi = Math.round(data.daily.temperature_2m_max[idx]);
+    const lo = Math.round(data.daily.temperature_2m_min[idx]);
+    const { icon, label } = weatherIcon(code);
+
+    iconEl.innerHTML = icon;
+    textEl.textContent = `${hi}°/${lo}° · ${label}`;
+    textEl.classList.remove("weather-chip__text--muted");
+  } catch (err) {
+    textEl.textContent = "Forecast unavailable";
+    textEl.classList.add("weather-chip__text--muted");
+  }
+}
+
 function render() {
   const today = startOfToday();
   const list = document.getElementById("game-list");
@@ -155,6 +251,8 @@ function render() {
       chipValue.textContent = `${WEEKDAYS[g.dateObj.getDay()].slice(0,3)}, ${MONTHS_LONG[g.dateObj.getMonth()].slice(0,3)} ${g.dateObj.getDate()}`;
     }
   }
+
+  loadWeatherFor(nextIndex === -1 ? null : decorated[nextIndex]);
 
   const addAllBtn = document.getElementById("add-all-btn");
   if (addAllBtn) {

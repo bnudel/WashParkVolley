@@ -37,6 +37,7 @@ Start/end times (`START_HOUR`, `START_MIN`, `END_HOUR`) are also set at the top 
 ## What's included
 
 - Full schedule list with auto-updating status (Next up / Upcoming / Played)
+- Live weather forecast for the next upcoming game, shown next to the "Next up" chip in the hero (via [Open-Meteo](https://open-meteo.com), a free API — no key required). Forecasts are only available ~16 days out; before that it shows a "check back closer to game day" message.
 - Calendar icon on each date opens a prefilled Google Calendar event in a new tab
 - "Add full season" button next to the schedule heading downloads one `.ics` file with all games — Google Calendar doesn't support prefilling multiple events through a link, so bulk-add works by importing this file (Google Calendar → Settings → Import & export → Import). It also opens directly in Apple Calendar and Outlook.
 - Embedded Google Map pinned to the courts' exact coordinates, plus a "Get directions" link

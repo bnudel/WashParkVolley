@@ -223,6 +223,34 @@ a:focus-visible {
   border-radius: 999px;
 }
 
+.weather-chip__body {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.weather-chip__icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  color: var(--sand);
+  flex-shrink: 0;
+}
+.weather-chip__icon svg { width: 100%; height: 100%; display: block; }
+
+.weather-chip__text {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--cream);
+  white-space: nowrap;
+}
+.weather-chip__text--muted {
+  font-weight: 500;
+  opacity: 0.7;
+  white-space: normal;
+}
+
 /* ---------------------------------------------------
    Layout helpers
 --------------------------------------------------- */
@@ -476,5 +504,9 @@ section:last-of-type { border-bottom: none; }
 
   .location__grid {
     grid-template-columns: 1fr;
+  }
+
+  .weather-chip__text {
+    white-space: normal;
   }
 }
