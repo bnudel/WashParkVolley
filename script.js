@@ -291,7 +291,7 @@ function renderLeaderboard({ players }) {
 
   status.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
   list.innerHTML = "";
-
+  console.log(players)
   players.forEach((p, i) => {
     const rank = i + 1;
     const li = document.createElement("li");
