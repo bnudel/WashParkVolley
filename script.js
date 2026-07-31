@@ -257,9 +257,9 @@ function buildLeaderboard(rows) {
       const dates = dateLabels.map((label, i) => {
         const raw = (r[i + 1] || "").trim();
         const n = parseInt(raw, 10);
-        return { label, count: n };
+        return { label, count: Number.isFinite(n) ? n : 0 };
       });
-
+      console.log(dates);
       let total = parseInt((r[totalIdx] || "").trim(), 10);
       if (!Number.isFinite(total)) {
         total = dates.reduce((sum, d) => sum + d.count, 0);
@@ -297,9 +297,7 @@ function renderLeaderboard({ players }) {
     const rank = i + 1;
     const li = document.createElement("li");
     li.className = "board-row" + (rank <= 3 ? ` board-row--top${rank}` : "");
-    console.log(p.dates)
-    const playedDates = p.dates.filter((d) => d.count != "");
-    console.log(playedDates)
+    const playedDates = p.dates.filter((d) => d.count == "");
     const breakdownId = `board-breakdown-${i}`;
 
     li.innerHTML = `
