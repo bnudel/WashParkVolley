@@ -259,7 +259,6 @@ function buildLeaderboard(rows) {
         const n = parseInt(raw, 10);
         return { label, count: Number.isFinite(n) ? n : 0 };
       });
-      console.log(dates);
       let total = parseInt((r[totalIdx] || "").trim(), 10);
       if (!Number.isFinite(total)) {
         total = dates.reduce((sum, d) => sum + d.count, 0);
@@ -298,6 +297,7 @@ function renderLeaderboard({ players }) {
     const li = document.createElement("li");
     li.className = "board-row" + (rank <= 3 ? ` board-row--top${rank}` : "");
     const playedDates = p.dates.filter((d) => d.count == "");
+    console.log(playedDates)
     const breakdownId = `board-breakdown-${i}`;
 
     li.innerHTML = `
@@ -337,7 +337,6 @@ async function loadLeaderboard() {
   status.textContent = "Loading…";
   try {
     const rows = await fetchLeaderboardRows();
-    console.log(rows)
     renderLeaderboard(buildLeaderboard(rows));
   } catch (err) {
     status.textContent = 'Couldn\'t load the leaderboard. Make sure the sheet is shared as "Anyone with the link — Viewer."';
