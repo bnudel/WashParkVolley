@@ -257,7 +257,7 @@ function buildLeaderboard(rows) {
       const dates = dateLabels.map((label, i) => {
         const raw = (r[i + 1] || "").trim();
         const n = parseInt(raw, 10);
-        return { label, count: Number.isFinite(n) ? n : 0 };
+        return { label, count: n };
       });
       let total = parseInt((r[totalIdx] || "").trim(), 10);
       if (!Number.isFinite(total)) {
@@ -291,13 +291,11 @@ function renderLeaderboard({ players }) {
 
   status.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
   list.innerHTML = "";
-  console.log(players)
   players.forEach((p, i) => {
     const rank = i + 1;
     const li = document.createElement("li");
     li.className = "board-row" + (rank <= 3 ? ` board-row--top${rank}` : "");
     const playedDates = p.dates.filter((d) => d.count != "");
-    console.log(playedDates)
     const breakdownId = `board-breakdown-${i}`;
 
     li.innerHTML = `
