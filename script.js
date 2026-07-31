@@ -298,7 +298,7 @@ function renderLeaderboard({ players }) {
     const li = document.createElement("li");
     li.className = "board-row" + (rank <= 3 ? ` board-row--top${rank}` : "");
 
-    const playedDates = p.dates.filter((d) => d.count > 0);
+    const playedDates = p.dates.filter((d) => d.count != "");
     const breakdownId = `board-breakdown-${i}`;
 
     li.innerHTML = `
@@ -343,6 +343,17 @@ async function loadLeaderboard() {
   } catch (err) {
     status.textContent = 'Couldn\'t load the leaderboard. Make sure the sheet is shared as "Anyone with the link — Viewer."';
     list.innerHTML = "";
+  }
+
+}
+
+function redNoShow(){
+  const buttons = document.getElementsByClassName('board-chip');
+
+  for(var i = 0;i<buttons.length;i++){
+    if(buttons[i].children[0].innerHTML.includes("0")){
+      buttons[i].style.backgroundColor = "#faaaaa";
+    }
   }
 }
 
@@ -426,6 +437,7 @@ function render() {
   if (refreshBtn) {
     refreshBtn.addEventListener("click", loadLeaderboard);
   }
+  redNoShow()
 }
 
 document.addEventListener("DOMContentLoaded", render);
