@@ -447,6 +447,110 @@ section:last-of-type { border-bottom: none; }
 }
 
 /* ---------------------------------------------------
+   Leaderboard
+--------------------------------------------------- */
+.leaderboard__status {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: rgba(14, 31, 28, 0.5);
+  margin: -0.6rem 0 1.4rem;
+}
+
+.board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid rgba(14, 31, 28, 0.1);
+}
+
+.board-row {
+  border-bottom: 1px solid rgba(14, 31, 28, 0.1);
+}
+
+.board-row__main {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 40px 1fr auto 20px;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.95rem 0.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-align: left;
+  color: inherit;
+}
+
+.board-row__rank {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(14, 31, 28, 0.06);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.board-row--top1 .board-row__rank { background: var(--sand); color: var(--ink); }
+.board-row--top2 .board-row__rank { background: #cfd6d3; color: var(--ink); }
+.board-row--top3 .board-row__rank { background: #e3ac86; color: var(--ink); }
+
+.board-row__name {
+  font-weight: 600;
+  font-size: 1rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.board-row__total {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--coral);
+  white-space: nowrap;
+}
+
+.board-row__chevron {
+  color: rgba(14, 31, 28, 0.4);
+  transition: transform 0.18s ease;
+}
+.board-row--open .board-row__chevron {
+  transform: rotate(180deg);
+}
+
+.board-row__breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0 0.25rem 1.1rem 3rem;
+}
+
+.board-chip {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  background: rgba(14, 31, 28, 0.05);
+  color: var(--ink);
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.board-chip strong {
+  color: var(--coral);
+  margin-left: 0.3rem;
+}
+
+.board-row__empty {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: rgba(14, 31, 28, 0.45);
+}
+
+/* ---------------------------------------------------
    Join CTA band
 --------------------------------------------------- */
 .join {
@@ -508,5 +612,13 @@ section:last-of-type { border-bottom: none; }
 
   .weather-chip__text {
     white-space: normal;
+  }
+
+  .board-row__main {
+    grid-template-columns: 32px 1fr auto 18px;
+    gap: 0.7rem;
+  }
+  .board-row__breakdown {
+    padding-left: 2.4rem;
   }
 }

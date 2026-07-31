@@ -10,7 +10,7 @@ const GAMES = [
 ];
 
 const VENUE = "Washington Park Volleyball Courts";
-const VENUE_COORDS = "39.699361,-104.971167";
+const VENUE_COORDS = "39.697419, -104.969710";
 const START_HOUR = 17; // 5:30pm local (Denver)
 const START_MIN = 30;
 const END_HOUR = 21; // ~dark
@@ -93,8 +93,8 @@ function downloadICS(games, filename) {
 // ---------------------------------------------------
 // Weather (Open-Meteo — no API key required)
 // ---------------------------------------------------
-const WEATHER_LAT = 39.697419;
-const WEATHER_LON = -104.969710;
+const WEATHER_LAT = 39.699361;
+const WEATHER_LON = -104.971167;
 
 // Minimal icon set + label per WMO weather code group.
 // https://open-meteo.com/en/docs#weathervariables
@@ -186,6 +186,165 @@ async function loadWeatherFor(game) {
   }
 }
 
+// ---------------------------------------------------
+// Attendance leaderboard (reads a published Google Sheet)
+// ---------------------------------------------------
+// Sheet layout expected: Player | <date columns...> | Total
+// The sheet must be shared as "Anyone with the link — Viewer."
+const LEADERBOARD_SHEET_ID = "1ywWGgfz11VcP97Ft3Czu8nNlM26939I5M4i0yEM5stY";
+const LEADERBOARD_GID = "0";
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (inQuotes) {
+      if (char === '"' && next === '"') { field += '"'; i++; }
+      else if (char === '"') { inQuotes = false; }
+      else { field += char; }
+    } else if (char === '"') {
+      inQuotes = true;
+    } else if (char === ",") {
+      row.push(field);
+      field = "";
+    } else if (char === "\r") {
+      // skip
+    } else if (char === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+    } else {
+      field += char;
+    }
+  }
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows.filter((r) => r.some((cell) => cell.trim() !== ""));
+}
+
+async function fetchLeaderboardRows() {
+  const url = `https://docs.google.com/spreadsheets/d/${LEADERBOARD_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${LEADERBOARD_GID}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error("Leaderboard sheet request failed");
+  const text = await res.text();
+  return parseCSV(text);
+}
+
+function buildLeaderboard(rows) {
+  if (!rows.length) return { dateLabels: [], players: [] };
+
+  const header = rows[0];
+  let totalIdx = header.findIndex((h) => h.trim().toLowerCase() === "total");
+  if (totalIdx === -1) totalIdx = header.length - 1;
+
+  const dateLabels = header.slice(1, totalIdx).map((h) => h.trim());
+
+  const players = rows
+    .slice(1)
+    .map((r) => {
+      const name = (r[0] || "").trim();
+      if (!name) return null;
+
+      const dates = dateLabels.map((label, i) => {
+        const raw = (r[i + 1] || "").trim();
+        const n = parseInt(raw, 10);
+        return { label, count: Number.isFinite(n) ? n : 0 };
+      });
+
+      let total = parseInt((r[totalIdx] || "").trim(), 10);
+      if (!Number.isFinite(total)) {
+        total = dates.reduce((sum, d) => sum + d.count, 0);
+      }
+
+      return { name, dates, total };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+
+  return { dateLabels, players };
+}
+
+function escapeHTML(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderLeaderboard({ players }) {
+  const list = document.getElementById("leaderboard-list");
+  const status = document.getElementById("leaderboard-status");
+  if (!list || !status) return;
+
+  if (!players.length) {
+    status.textContent = "No attendance recorded yet — check back after the next game.";
+    list.innerHTML = "";
+    return;
+  }
+
+  status.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+  list.innerHTML = "";
+
+  players.forEach((p, i) => {
+    const rank = i + 1;
+    const li = document.createElement("li");
+    li.className = "board-row" + (rank <= 3 ? ` board-row--top${rank}` : "");
+
+    const playedDates = p.dates.filter((d) => d.count > 0);
+    const breakdownId = `board-breakdown-${i}`;
+
+    li.innerHTML = `
+      <button class="board-row__main" aria-expanded="false" aria-controls="${breakdownId}">
+        <span class="board-row__rank">${rank}</span>
+        <span class="board-row__name">${escapeHTML(p.name)}</span>
+        <span class="board-row__total">${p.total}</span>
+        <svg class="board-row__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="board-row__breakdown" id="${breakdownId}" hidden>
+        ${
+          playedDates.length
+            ? playedDates.map((d) => `<span class="board-chip">${escapeHTML(d.label)}<strong>${d.count}</strong></span>`).join("")
+            : `<span class="board-row__empty">No games logged yet</span>`
+        }
+      </div>
+    `;
+
+    const btn = li.querySelector(".board-row__main");
+    const panel = li.querySelector(".board-row__breakdown");
+    btn.addEventListener("click", () => {
+      const expanded = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!expanded));
+      panel.hidden = expanded;
+      li.classList.toggle("board-row--open", !expanded);
+    });
+
+    list.appendChild(li);
+  });
+}
+
+async function loadLeaderboard() {
+  const status = document.getElementById("leaderboard-status");
+  const list = document.getElementById("leaderboard-list");
+  if (!status || !list) return;
+
+  status.textContent = "Loading…";
+  try {
+    const rows = await fetchLeaderboardRows();
+    renderLeaderboard(buildLeaderboard(rows));
+  } catch (err) {
+    status.textContent = 'Couldn\'t load the leaderboard. Make sure the sheet is shared as "Anyone with the link — Viewer."';
+    list.innerHTML = "";
+  }
+}
+
 function render() {
   const today = startOfToday();
   const list = document.getElementById("game-list");
@@ -259,6 +418,12 @@ function render() {
     addAllBtn.addEventListener("click", () => {
       downloadICS(GAMES, "wash-park-volleyball-2026-season.ics");
     });
+  }
+
+  loadLeaderboard();
+  const refreshBtn = document.getElementById("refresh-leaderboard");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", loadLeaderboard);
   }
 }
 
