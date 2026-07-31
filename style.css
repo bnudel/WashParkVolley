@@ -601,6 +601,10 @@ section:last-of-type { border-bottom: none; }
   color: rgba(14, 31, 28, 0.45);
 }
 
+[hidden] {
+  display: none !important;
+}
+
 /* ---------------------------------------------------
    Responsive
 --------------------------------------------------- */
