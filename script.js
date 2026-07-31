@@ -257,7 +257,7 @@ function buildLeaderboard(rows) {
       const dates = dateLabels.map((label, i) => {
         const raw = (r[i + 1] || "").trim();
         const n = parseInt(raw, 10);
-        return { label, count: Number.isFinite(n) ? n : 0 };
+        return { label, count: n };
       });
 
       let total = parseInt((r[totalIdx] || "").trim(), 10);
