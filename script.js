@@ -228,7 +228,6 @@ function parseCSV(text) {
     row.push(field);
     rows.push(row);
   }
-  console.log(rows.filter((r) => r.some((cell) => cell.trim() !== "")))
   return rows.filter((r) => r.some((cell) => cell.trim() !== ""));
 }
 
@@ -237,6 +236,7 @@ async function fetchLeaderboardRows() {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("Leaderboard sheet request failed");
   const text = await res.text();
+  console.log(text)
   return parseCSV(text);
 }
 
