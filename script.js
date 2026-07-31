@@ -257,8 +257,9 @@ function buildLeaderboard(rows) {
       const dates = dateLabels.map((label, i) => {
         const raw = (r[i + 1] || "").trim();
         const n = parseInt(raw, 10);
-        return { label, count: n };
+        return { label, count: Number.isFinite(n) ? n : 0, hasValue: raw !== "" };
       });
+
       let total = parseInt((r[totalIdx] || "").trim(), 10);
       if (!Number.isFinite(total)) {
         total = dates.reduce((sum, d) => sum + d.count, 0);
@@ -291,11 +292,13 @@ function renderLeaderboard({ players }) {
 
   status.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
   list.innerHTML = "";
+
   players.forEach((p, i) => {
     const rank = i + 1;
     const li = document.createElement("li");
     li.className = "board-row" + (rank <= 3 ? ` board-row--top${rank}` : "");
-    const playedDates = p.dates.filter((d) => d.count != "");
+
+    const loggedDates = p.dates.filter((d) => d.hasValue);
     const breakdownId = `board-breakdown-${i}`;
 
     li.innerHTML = `
@@ -307,8 +310,13 @@ function renderLeaderboard({ players }) {
       </button>
       <div class="board-row__breakdown" id="${breakdownId}" hidden>
         ${
-          playedDates.length
-            ? playedDates.map((d) => `<span class="board-chip">${escapeHTML(d.label)}<strong>${d.count}</strong></span>`).join("")
+          loggedDates.length
+            ? loggedDates
+                .map(
+                  (d) =>
+                    `<span class="board-chip${d.count === 0 ? " board-chip--zero" : ""}">${escapeHTML(d.label)}<strong>${d.count}</strong></span>`
+                )
+                .join("")
             : `<span class="board-row__empty">No games logged yet</span>`
         }
       </div>
@@ -339,17 +347,6 @@ async function loadLeaderboard() {
   } catch (err) {
     status.textContent = 'Couldn\'t load the leaderboard. Make sure the sheet is shared as "Anyone with the link — Viewer."';
     list.innerHTML = "";
-  }
-
-}
-
-function redNoShow(){
-  const buttons = document.getElementsByClassName('board-chip');
-
-  for(var i = 0;i<buttons.length;i++){
-    if(buttons[i].children[0].innerHTML.includes("0")){
-      buttons[i].style.backgroundColor = "#faaaaa";
-    }
   }
 }
 
@@ -433,7 +430,6 @@ function render() {
   if (refreshBtn) {
     refreshBtn.addEventListener("click", loadLeaderboard);
   }
-  redNoShow()
 }
 
 document.addEventListener("DOMContentLoaded", render);

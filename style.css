@@ -544,6 +544,13 @@ section:last-of-type { border-bottom: none; }
   margin-left: 0.3rem;
 }
 
+.board-chip--zero {
+  opacity: 0.55;
+}
+.board-chip--zero strong {
+  color: rgba(14, 31, 28, 0.45);
+}
+
 .board-row__empty {
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -591,10 +598,6 @@ section:last-of-type { border-bottom: none; }
   font-family: var(--font-mono);
   font-size: 0.78rem;
   color: rgba(14, 31, 28, 0.45);
-}
-
-[hidden] {
-  display: none !important;
 }
 
 /* ---------------------------------------------------
