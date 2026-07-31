@@ -228,6 +228,7 @@ function parseCSV(text) {
     row.push(field);
     rows.push(row);
   }
+  console.log(rows.filter((r) => r.some((cell) => cell.trim() !== "")))
   return rows.filter((r) => r.some((cell) => cell.trim() !== ""));
 }
 
