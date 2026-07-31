@@ -236,7 +236,6 @@ async function fetchLeaderboardRows() {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("Leaderboard sheet request failed");
   const text = await res.text();
-  console.log(text)
   return parseCSV(text);
 }
 
@@ -339,6 +338,7 @@ async function loadLeaderboard() {
   status.textContent = "Loading…";
   try {
     const rows = await fetchLeaderboardRows();
+    console.log(rows)
     renderLeaderboard(buildLeaderboard(rows));
   } catch (err) {
     status.textContent = 'Couldn\'t load the leaderboard. Make sure the sheet is shared as "Anyone with the link — Viewer."';
