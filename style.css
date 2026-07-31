@@ -546,6 +546,7 @@ section:last-of-type { border-bottom: none; }
 
 .board-chip--zero {
   opacity: 0.55;
+  background-color: #ff8282;
 }
 .board-chip--zero strong {
   color: rgba(14, 31, 28, 0.45);
