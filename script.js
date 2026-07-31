@@ -296,7 +296,7 @@ function renderLeaderboard({ players }) {
     const rank = i + 1;
     const li = document.createElement("li");
     li.className = "board-row" + (rank <= 3 ? ` board-row--top${rank}` : "");
-    const playedDates = p.dates.filter((d) => d.count == "");
+    const playedDates = p.dates.filter((d) => d.count != "");
     console.log(playedDates)
     const breakdownId = `board-breakdown-${i}`;
 
