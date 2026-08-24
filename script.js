@@ -463,7 +463,7 @@ async function init() {
 
     if (scheduleStatus) {
       scheduleStatus.textContent = GAMES.length
-        ? `Synced from the sheet · ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
+        ? `Synced · ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
         : "No date columns found in the sheet yet.";
     }
 
