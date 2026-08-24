@@ -1,17 +1,10 @@
 // ---------------------------------------------------
-// Schedule data — edit this list to change the season
+// Schedule — now derived from the Google Sheet's header
+// row (the same date columns used for attendance).
 // ---------------------------------------------------
-const GAMES = [
-  { date: "2026-07-30" },
-  { date: "2026-08-05" },
-  { date: "2026-08-12" },
-  { date: "2026-08-21" },
-  { date: "2026-08-27" },
-  { date: "2026-09-04" },
-  { date: "2026-09-09" },
-  { date: "2026-09-16" },
-  { date: "2026-09-23" },
-];
+const SEASON_YEAR = 2026; // fallback year for headers like "7/30" with no year in them
+
+let GAMES = []; // populated by init() from the sheet — do not hardcode
 
 const VENUE = "Washington Park Volleyball Courts";
 const VENUE_COORDS = "39.697419, -104.969710";
@@ -22,6 +15,34 @@ const END_HOUR = 21; // ~dark
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const MONTHS_LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+// Parses a sheet header cell like "7/30", "7/30/26", or "07/30/2026" into
+// an ISO date string. Returns null for anything that isn't a recognizable date
+// (e.g. blank columns) so those columns are simply skipped for the schedule.
+function parseHeaderDate(label, defaultYear) {
+  const trimmed = (label || "").trim();
+  const match = trimmed.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+  if (!match) return null;
+
+  const month = parseInt(match[1], 10);
+  const day = parseInt(match[2], 10);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+
+  let year = defaultYear;
+  if (match[3]) {
+    year = match[3].length === 2 ? 2000 + parseInt(match[3], 10) : parseInt(match[3], 10);
+  }
+
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function buildSchedule(dateLabels) {
+  return dateLabels
+    .map((label) => parseHeaderDate(label, SEASON_YEAR))
+    .filter(Boolean)
+    .map((date) => ({ date }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
 
 function parseLocalDate(iso) {
   const [y, m, d] = iso.split("-").map(Number);
@@ -191,12 +212,13 @@ async function loadWeatherFor(game) {
 }
 
 // ---------------------------------------------------
-// Attendance leaderboard (reads a published Google Sheet)
+// Google Sheet — single source of truth for both the
+// schedule (header row) and attendance (player rows).
 // ---------------------------------------------------
-// Sheet layout expected: Player | <date columns...> | Total
+// Expected layout: Player | <date columns...> | Total
 // The sheet must be shared as "Anyone with the link — Viewer."
-const LEADERBOARD_SHEET_ID = "1ywWGgfz11VcP97Ft3Czu8nNlM26939I5M4i0yEM5stY";
-const LEADERBOARD_GID = "0";
+const SHEET_ID = "1ywWGgfz11VcP97Ft3Czu8nNlM26939I5M4i0yEM5stY";
+const SHEET_GID = "0";
 
 function parseCSV(text) {
   const rows = [];
@@ -235,10 +257,10 @@ function parseCSV(text) {
   return rows.filter((r) => r.some((cell) => cell.trim() !== ""));
 }
 
-async function fetchLeaderboardRows() {
-  const url = `https://docs.google.com/spreadsheets/d/${LEADERBOARD_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${LEADERBOARD_GID}`;
+async function fetchSheetRows() {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}`;
   const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error("Leaderboard sheet request failed");
+  if (!res.ok) throw new Error("Sheet request failed");
   const text = await res.text();
   return parseCSV(text);
 }
@@ -339,22 +361,7 @@ function renderLeaderboard({ players }) {
   });
 }
 
-async function loadLeaderboard() {
-  const status = document.getElementById("leaderboard-status");
-  const list = document.getElementById("leaderboard-list");
-  if (!status || !list) return;
-
-  status.textContent = "Loading…";
-  try {
-    const rows = await fetchLeaderboardRows();
-    renderLeaderboard(buildLeaderboard(rows));
-  } catch (err) {
-    status.textContent = 'Couldn\'t load the leaderboard. Make sure the sheet is shared as "Anyone with the link — Viewer."';
-    list.innerHTML = "";
-  }
-}
-
-function render() {
+function renderSchedule() {
   const today = startOfToday();
   const list = document.getElementById("game-list");
   const chipValue = document.querySelector("#next-game-chip .chip__value");
@@ -367,6 +374,10 @@ function render() {
   const nextIndex = decorated.findIndex((g) => !g.isPast);
 
   list.innerHTML = "";
+
+  if (!decorated.length) {
+    list.innerHTML = `<li class="game-list__empty">No dates found yet — add date columns to the sheet to populate the schedule.</li>`;
+  }
 
   decorated.forEach((game, i) => {
     const { dateObj } = game;
@@ -413,7 +424,7 @@ function render() {
 
   if (chipValue) {
     if (nextIndex === -1) {
-      chipValue.textContent = "See you next season";
+      chipValue.textContent = decorated.length ? "See you next season" : "—";
     } else {
       const g = decorated[nextIndex];
       chipValue.textContent = `${WEEKDAYS[g.dateObj.getDay()].slice(0,3)}, ${MONTHS_LONG[g.dateObj.getMonth()].slice(0,3)} ${g.dateObj.getDate()}`;
@@ -421,19 +432,72 @@ function render() {
   }
 
   loadWeatherFor(nextIndex === -1 ? null : decorated[nextIndex]);
+}
 
-  const addAllBtn = document.getElementById("add-all-btn");
-  if (addAllBtn) {
-    addAllBtn.addEventListener("click", () => {
-      downloadICS(GAMES, "wash-park-volleyball-2026-season.ics");
-    });
+function showScheduleError() {
+  const list = document.getElementById("game-list");
+  const chipValue = document.querySelector("#next-game-chip .chip__value");
+  const weatherText = document.getElementById("weather-text");
+
+  if (list) {
+    list.innerHTML = `<li class="game-list__empty">Couldn't load the schedule from the sheet.</li>`;
   }
-
-  loadLeaderboard();
-  const refreshBtn = document.getElementById("refresh-leaderboard");
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", loadLeaderboard);
+  if (chipValue) chipValue.textContent = "Unavailable";
+  if (weatherText) {
+    weatherText.textContent = "Unavailable";
+    weatherText.classList.add("weather-chip__text--muted");
   }
 }
 
-document.addEventListener("DOMContentLoaded", render);
+async function init() {
+  const scheduleStatus = document.getElementById("schedule-status");
+  const leaderboardStatus = document.getElementById("leaderboard-status");
+  if (scheduleStatus) scheduleStatus.textContent = "Loading schedule…";
+  if (leaderboardStatus) leaderboardStatus.textContent = "Loading…";
+
+  try {
+    const rows = await fetchSheetRows();
+    const { dateLabels, players } = buildLeaderboard(rows);
+
+    GAMES = buildSchedule(dateLabels);
+
+    if (scheduleStatus) {
+      scheduleStatus.textContent = GAMES.length
+        ? `Synced from the sheet · ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
+        : "No date columns found in the sheet yet.";
+    }
+
+    renderSchedule();
+    renderLeaderboard({ players });
+  } catch (err) {
+    if (scheduleStatus) {
+      scheduleStatus.textContent = 'Couldn\'t load the schedule. Make sure the sheet is shared as "Anyone with the link — Viewer."';
+    }
+    if (leaderboardStatus) {
+      leaderboardStatus.textContent = 'Couldn\'t load the leaderboard. Make sure the sheet is shared as "Anyone with the link — Viewer."';
+    }
+    showScheduleError();
+    const leaderboardList = document.getElementById("leaderboard-list");
+    if (leaderboardList) leaderboardList.innerHTML = "";
+  }
+}
+
+function setupControls() {
+  const addAllBtn = document.getElementById("add-all-btn");
+  if (addAllBtn) {
+    addAllBtn.addEventListener("click", () => {
+      if (!GAMES.length) return;
+      downloadICS(GAMES, `wash-park-volleyball-${SEASON_YEAR}-season.ics`);
+    });
+  }
+
+  const refreshBtn = document.getElementById("refresh-leaderboard");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", init);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupControls();
+  init();
+});
