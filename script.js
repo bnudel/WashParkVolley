@@ -372,9 +372,7 @@ function renderSchedule() {
     return { ...g, dateObj: d, isPast: d < today };
   });
 
-  console.log(GAMES.length);
-  console.log(numDays);
-  numDays.innerHTML = '<p class="numDays"> tests</p>'//GAMES.length + " nights on the calendar. Show up whenever you can make it.</p;
+  numDays[0].innerHTML = '<p class="numDays"> ${GAMES.length} +  nights on the calendar. Show up whenever you can make it.</p';
 
   const nextIndex = decorated.findIndex((g) => !g.isPast);
 
