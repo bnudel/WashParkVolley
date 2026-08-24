@@ -365,17 +365,17 @@ function renderSchedule() {
   const today = startOfToday();
   const list = document.getElementById("game-list");
   const chipValue = document.querySelector("#next-game-chip .chip__value");
-  let numGames = document.getElementsByClassName('numDays')
+  let numDays = document.getElementsByClassName('numDays')
 
   const decorated = GAMES.map((g) => {
     const d = parseLocalDate(g.date);
     return { ...g, dateObj: d, isPast: d < today };
   });
 
-  //console.log(GAMES.length);
-  //console.log(numDays.textContent);
-  //numDays.textContent = "tests";//GAMES.length + " nights on the calendar. Show up whenever you can make it.";
-  //console.log(numDays.textContent);
+  console.log(GAMES.length);
+  console.log(numDays.textContent);
+  numDays.textContent = "tests";//GAMES.length + " nights on the calendar. Show up whenever you can make it.";
+  console.log(numDays.textContent);
 
   const nextIndex = decorated.findIndex((g) => !g.isPast);
 
