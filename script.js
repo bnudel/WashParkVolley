@@ -7,6 +7,10 @@ const GAMES = [
   { date: "2026-08-12" },
   { date: "2026-08-21" },
   { date: "2026-08-27" },
+  { date: "2026-09-04" },
+  { date: "2026-09-09" },
+  { date: "2026-09-16" },
+  { date: "2026-09-23" },
 ];
 
 const VENUE = "Washington Park Volleyball Courts";
