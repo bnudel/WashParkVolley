@@ -373,8 +373,8 @@ function renderSchedule() {
   });
 
   console.log(GAMES.length);
-  console.log(numDays.innerHTML);
-  numDays.innerHTML = '<p class="numDays" tests" '//GAMES.length + " nights on the calendar. Show up whenever you can make it.</p;
+  console.log(numDays);
+  numDays.innerHTML = '<p class="numDays"> tests</p>'//GAMES.length + " nights on the calendar. Show up whenever you can make it.</p;
 
   const nextIndex = decorated.findIndex((g) => !g.isPast);
 
