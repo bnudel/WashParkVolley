@@ -8,8 +8,8 @@ let GAMES = []; // populated by init() from the sheet — do not hardcode
 
 const VENUE = "Washington Park Volleyball Courts";
 const VENUE_COORDS = "39.697419, -104.969710";
-const START_HOUR = 17; // 5:30pm local (Denver)
-const START_MIN = 30;
+const START_HOUR = 17; // 5:00pm local (Denver)
+const START_MIN = 0;
 const END_HOUR = 21; // ~dark
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -71,7 +71,7 @@ function buildGoogleCalendarUrl({ date }) {
     action: "TEMPLATE",
     text: "Wash Park Volleyball",
     dates: `${fmtGCal(startUTC)}/${fmtGCal(endUTC)}`,
-    details: "Pickup volleyball at Washington Park. 5:30 to dark.",
+    details: "Pickup volleyball at Washington Park. 5:00 to dark.",
     location: VENUE,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -87,7 +87,7 @@ function veventBlock({ date }) {
     `DTEND:${fmtICS(endUTC)}`,
     `SUMMARY:Wash Park Volleyball`,
     `LOCATION:${VENUE}`,
-    `DESCRIPTION:Pickup volleyball at Washington Park. 5:30 to dark.`,
+    `DESCRIPTION:Pickup volleyball at Washington Park. 5:00 to dark.`,
     "END:VEVENT",
   ].join("\r\n");
 }
