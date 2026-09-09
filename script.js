@@ -410,7 +410,7 @@ function renderSchedule() {
       </div>
       <div class="game-row__info">
         <p class="game-row__weekday">${weekday}</p>
-        <p class="game-row__sub">5:30 to dark</p>
+        <p class="game-row__sub">5:00 to dark</p>
       </div>
       <span class="status-pill ${pillClass}">${pillText}</span>
       <a class="cal-btn" href="${buildGoogleCalendarUrl(game)}" target="_blank" rel="noopener" title="Add to Google Calendar" aria-label="Add ${weekday}, ${month} ${day} to Google Calendar">
