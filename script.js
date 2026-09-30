@@ -361,6 +361,19 @@ function renderLeaderboard({ players }) {
   });
 }
 
+function canc(x){
+  let rows = document.getElementsByClassName('game-row');
+
+  for(let date = 0;date++;date<x.length){
+    for(let row = 0;row++;row<rows.length){
+      if(rows[row].children[0].children[0].textContent == x[date][0] && row[0].children[0].children[1].textContent == x[date][1]){
+        rows[row].style.backgroundColor = 'red';
+        rows[row].children[1].children[0].innerText = rows[row].children[1].children[0].innerText + ' CANCELED'
+      }
+    }
+  }
+}
+
 function renderSchedule() {
   const today = startOfToday();
   const list = document.getElementById("game-list");
@@ -472,6 +485,7 @@ async function init() {
 
     renderSchedule();
     renderLeaderboard({ players });
+    canc([['SEP','30']]);
   } catch (err) {
     if (scheduleStatus) {
       scheduleStatus.textContent = 'Couldn\'t load the schedule. Make sure the sheet is shared as "Anyone with the link — Viewer."';
