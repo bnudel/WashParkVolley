@@ -363,12 +363,15 @@ function renderLeaderboard({ players }) {
 
 function canc(x){
   let rows = document.getElementsByClassName('game-row');
+  console.log(rows.length);
 
-  for(let date = 0;date++;date<x.length){
-    for(let row = 0;row++;row<rows.length){
-      if(rows[row].children[0].children[0].textContent == x[date][0] && row[0].children[0].children[1].textContent == x[date][1]){
+  for(let date = 0;date<x.length;date++){
+    for(let row = 0;row<rows.length;row++){
+      console.log(rows[row]);
+      console.log(date);
+      if(rows[row].children[0].children[0].textContent == x[date][0] && rows[row].children[0].children[1].textContent == x[date][1]){
         rows[row].style.backgroundColor = 'red';
-        rows[row].children[1].children[0].innerText = rows[row].children[1].children[0].innerText + ' CANCELED'
+        rows[row].children[1].children[0].innerText = rows[row].children[1].children[0].innerText + ' !!CANCELED DUE TO WEATHER!!'
       }
     }
   }
