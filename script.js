@@ -488,6 +488,7 @@ async function init() {
 
     renderSchedule();
     renderLeaderboard({ players });
+    if (typeof renderSummary === "function") renderSummary({ dateLabels, players });
   } catch (err) {
     if (scheduleStatus) {
       scheduleStatus.textContent = 'Couldn\'t load the schedule. Make sure the sheet is shared as "Anyone with the link — Viewer."';
