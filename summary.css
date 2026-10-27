@@ -1,0 +1,138 @@
+/* ---------------------------------------------------
+   Season summary (uses tokens from style.css)
+--------------------------------------------------- */
+.summary__sub {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(14, 31, 28, 0.55);
+  margin: 2.4rem 0 1rem;
+}
+
+.summary__empty {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: rgba(14, 31, 28, 0.5);
+}
+
+/* Headline numbers */
+.summary__headline {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.8rem;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(14, 31, 28, 0.12);
+  border-radius: var(--radius);
+}
+.stat-tile__value {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  line-height: 1;
+  color: var(--coral);
+}
+.stat-tile__label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(14, 31, 28, 0.6);
+}
+
+/* Turnout bar chart */
+.turnout {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  height: 170px;
+  padding: 0.5rem 0 0;
+  overflow-x: auto;
+}
+.turnout__col {
+  flex: 1 0 28px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.3rem;
+}
+.turnout__bar {
+  width: 100%;
+  min-height: 4px;
+  background: var(--coral);
+  border-radius: 5px 5px 0 0;
+}
+.turnout__col:hover .turnout__bar { background: var(--sand-dim); }
+.turnout__val,
+.turnout__lbl {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: rgba(14, 31, 28, 0.6);
+}
+.turnout__val { font-weight: 700; color: var(--ink); }
+
+/* Award cards */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--dusk-1);
+  color: var(--cream);
+  border-radius: var(--radius);
+  padding: 1.3rem 1.4rem 1.4rem;
+}
+.stat-card__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+.stat-card__icon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  color: var(--sand);
+  flex-shrink: 0;
+}
+.stat-card__icon svg { width: 100%; height: 100%; display: block; }
+.stat-card__award {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: 1.45rem;
+  line-height: 1.05;
+  color: var(--sand);
+  margin: 0 0 0.5rem;
+}
+.stat-card__winner {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0 0 0.35rem;
+  overflow-wrap: anywhere;
+}
+.stat-card__detail {
+  margin: 0;
+  font-size: 0.86rem;
+  opacity: 0.75;
+}
+
+@media (max-width: 640px) {
+  .summary__headline { grid-template-columns: repeat(2, 1fr); }
+  .stat-tile:last-child { grid-column: span 2; }
+}
